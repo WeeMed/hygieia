@@ -2,14 +2,14 @@
 
 **Enterprise-grade intelligent deployment solution with 10-second healthcare system startup**
 
-[![Latest Release](https://img.shields.io/badge/release-v1.0.9-green.svg)](https://github.com/WeeMed/hygieia/releases/latest)
+[![Latest Release](https://img.shields.io/badge/release-v1.0.10-green.svg)](https://github.com/WeeMed/hygieia/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/WeeMed/hygieia)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-lightgrey.svg)](https://github.com/WeeMed/hygieia/releases)
 
 ## 🚀 Quick Install
 
 ```bash
-curl -fsSL https://github.com/WeeMed/hygieia/releases/download/v1.0.9/install.sh | bash
+curl -fsSL https://github.com/WeeMed/hygieia/releases/download/v1.0.10/install.sh | bash
 ```
 
 ## ✨ Key Features
@@ -38,7 +38,7 @@ curl -fsSL https://github.com/WeeMed/hygieia/releases/download/v1.0.9/install.sh
 ### 1. Install Hygieia CLI
 
 ```bash
-curl -fsSL https://github.com/WeeMed/hygieia/releases/download/v1.0.9/install.sh | bash
+curl -fsSL https://github.com/WeeMed/hygieia/releases/download/v1.0.10/install.sh | bash
 ```
 
 ### 2. Initialize Configuration
@@ -124,7 +124,7 @@ If you prefer manual installation:
 
 ```bash
 # Download binary
-wget https://github.com/WeeMed/hygieia/releases/download/v1.0.9/hygieia-linux-amd64
+wget https://github.com/WeeMed/hygieia/releases/download/v1.0.10/hygieia-linux-amd64
 chmod +x hygieia-linux-amd64
 sudo mv hygieia-linux-amd64 /usr/local/bin/hygieia
 ```
@@ -133,7 +133,7 @@ sudo mv hygieia-linux-amd64 /usr/local/bin/hygieia
 
 ```bash
 # Download binary
-curl -LO https://github.com/WeeMed/hygieia/releases/download/v1.0.9/hygieia-darwin-arm64
+curl -LO https://github.com/WeeMed/hygieia/releases/download/v1.0.10/hygieia-darwin-arm64
 chmod +x hygieia-darwin-arm64
 sudo mv hygieia-darwin-arm64 /usr/local/bin/hygieia
 ```
@@ -143,7 +143,7 @@ sudo mv hygieia-darwin-arm64 /usr/local/bin/hygieia
 Verify download integrity:
 
 ```bash
-wget https://github.com/WeeMed/hygieia/releases/download/v1.0.9/checksums.txt
+wget https://github.com/WeeMed/hygieia/releases/download/v1.0.10/checksums.txt
 sha256sum -c checksums.txt
 ```
 
