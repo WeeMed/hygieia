@@ -2,8 +2,8 @@
 
 **Enterprise-grade intelligent deployment solution with 10-second healthcare system startup**
 
-[![Release](https://img.shields.io/github/v/release/WeeMed/hygieia)](https://github.com/WeeMed/hygieia/releases)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Latest Release](https://img.shields.io/badge/release-v1.0.0-green.svg)](https://github.com/WeeMed/hygieia/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/WeeMed/hygieia)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-lightgrey.svg)](https://github.com/WeeMed/hygieia/releases)
 
 ## 🚀 Quick Install
