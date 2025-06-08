@@ -72,7 +72,7 @@ services:
         condition: service_healthy
 
   hi-hope:
-    image: ${REGISTRY:-ghcr.io/weemed-ai/hygieia}/hi-hope:${TAG:-latest}
+    image: ${REGISTRY:-ghcr.io/weemed/hygieia}/hi-hope:${TAG:-latest}
     container_name: hygieia-hi-hope
     restart: always
     expose:
@@ -88,7 +88,7 @@ services:
       - core
 
   hi-care:
-    image: ${REGISTRY:-ghcr.io/weemed-ai/hygieia}/hi-care:${TAG:-latest}
+    image: ${REGISTRY:-ghcr.io/weemed/hygieia}/hi-care:${TAG:-latest}
     container_name: hygieia-hi-care
     restart: always
     expose:
@@ -104,7 +104,7 @@ services:
       - core
 
   hi-checkup:
-    image: ${REGISTRY:-ghcr.io/weemed-ai/hygieia}/hi-checkup:${TAG:-latest}
+    image: ${REGISTRY:-ghcr.io/weemed/hygieia}/hi-checkup:${TAG:-latest}
     container_name: hygieia-hi-checkup
     restart: always
     expose:
