@@ -1,43 +1,47 @@
-# Hygieia - 智能醫療系統部署工具
+# Hygieia - Intelligent Healthcare System Deployment
 
-**企業級智能部署解決方案，10 秒極速啟動醫療系統**
+**Enterprise-grade intelligent deployment solution with 10-second healthcare system startup**
 
-## 🚀 一鍵安裝
+[![Release](https://img.shields.io/github/v/release/WeeMed/hygieia)](https://github.com/WeeMed/hygieia/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS-lightgrey.svg)](https://github.com/WeeMed/hygieia/releases)
 
-```bash
-curl -fsSL https://github.com/WeeMed/hygieia/releases/download/v1.0.0/install.sh | bash
-```
-
-## ✨ 核心特色
-
-- **⚡ 極速部署**: 10 秒啟動，0 秒等待資料庫
-- **🧠 智能自動化**: 自動檢測並修復 90% 常見問題
-- **🌍 多語言界面**: 繁體中文 / English TUI 操作
-- **🔧 簡單易用**: 3 步完成部署，無需 DevOps 知識
-- **📦 多產品支援**: hi-care, hi-hope, hi-checkup 醫療系統
-
-## 🎯 適用場景
-
-- **醫療機構**: 快速部署電子病歷、健檢系統
-- **軟體公司**: 向客戶交付醫療解決方案
-- **系統整合商**: 簡化醫療系統部署流程
-
-## 📋 系統需求
-
-- **作業系統**: Linux (Ubuntu 20.04+) 或 macOS
-- **記憶體**: 4GB+ RAM (推薦 8GB+)
-- **硬碟**: 20GB+ 可用空間
-- **容器**: Docker 24.0+ & Docker Compose 2.24+
-
-## 🚀 部署步驟
-
-### 1. 安裝 Hygieia CLI
+## 🚀 Quick Install
 
 ```bash
 curl -fsSL https://github.com/WeeMed/hygieia/releases/download/v1.0.0/install.sh | bash
 ```
 
-### 2. 初始化配置
+## ✨ Key Features
+
+- **⚡ Lightning Fast**: 10-second startup, zero database wait time
+- **🧠 AI-Powered**: Automatically detects and fixes 90% of common issues
+- **🌍 Multilingual**: Traditional Chinese / English TUI interface
+- **🔧 Developer Friendly**: 3-step deployment, no DevOps expertise required
+- **📦 Multi-Product**: Supports hi-care, hi-hope, hi-checkup medical systems
+
+## 🎯 Use Cases
+
+- **Healthcare Institutions**: Rapid deployment of EMR and health screening systems
+- **Software Companies**: Deliver medical solutions to clients efficiently
+- **System Integrators**: Simplify medical system deployment workflows
+
+## 📋 System Requirements
+
+- **OS**: Linux (Ubuntu 20.04+) or macOS
+- **Memory**: 4GB+ RAM (8GB+ recommended)
+- **Storage**: 20GB+ available space
+- **Containers**: Docker 24.0+ & Docker Compose 2.24+
+
+## 🚀 Quick Start
+
+### 1. Install Hygieia CLI
+
+```bash
+curl -fsSL https://github.com/WeeMed/hygieia/releases/download/v1.0.0/install.sh | bash
+```
+
+### 2. Initialize Configuration
 
 ```bash
 mkdir my-medical-system
@@ -45,70 +49,120 @@ cd my-medical-system
 hygieia init
 ```
 
-TUI 介面會引導您：
+The TUI interface will guide you through:
 
-- 選擇醫療產品（hi-care/hi-hope/hi-checkup）
-- 配置域名和 SSL
-- 設定組織資訊
+- Select medical products (hi-care/hi-hope/hi-checkup)
+- Configure domains and SSL
+- Set organization information
 
-### 3. 一鍵部署
+### 3. One-Click Deployment
 
 ```bash
 hygieia deploy up
 ```
 
-**就這麼簡單！系統會自動：**
+**That's it! The system will automatically:**
 
-- 下載所需容器映像
-- 配置資料庫和網路
-- 設定 SSL 憑證（可選）
-- 啟動所有服務
+- Download required container images
+- Configure databases and networking
+- Set up SSL certificates (optional)
+- Start all services
 
-## 📖 詳細文檔
+## 📖 Documentation
 
-- [📥 下載安裝指南](https://github.com/WeeMed/hygieia/releases/download/v1.0.0/DOWNLOAD.md)
-- [📋 版本發布說明](https://github.com/WeeMed/hygieia/releases/download/v1.0.0/RELEASE_NOTES.md)
-- [⚙️ 詳細安裝說明](https://github.com/WeeMed/hygieia/releases/download/v1.0.0/INSTALL.md)
+- [📥 Download & Installation Guide](https://github.com/WeeMed/hygieia/releases/download/v1.0.0/DOWNLOAD.md)
+- [📋 Release Notes](https://github.com/WeeMed/hygieia/releases/download/v1.0.0/RELEASE_NOTES.md)
+- [⚙️ Detailed Installation Instructions](https://github.com/WeeMed/hygieia/releases/download/v1.0.0/INSTALL.md)
 
-## 🔧 常用指令
+## 🔧 Common Commands
 
 ```bash
-hygieia --help          # 查看所有指令
-hygieia init            # 初始化專案
-hygieia deploy up       # 部署系統
-hygieia deploy down     # 停止系統
-hygieia dev status      # 查看狀態
-hygieia dev logs        # 查看日誌
-hygieia backup create   # 備份資料
-hygieia snapshot create # 生成快照
+hygieia --help          # Show all commands
+hygieia init            # Initialize project
+hygieia deploy up       # Deploy system
+hygieia deploy down     # Stop system
+hygieia status          # Check status
+hygieia logs            # View logs
+hygieia backup create   # Backup data
+hygieia snapshot create # Create snapshot
 ```
 
-## 🆘 技術支援
+## 🆘 Troubleshooting
 
-如遇到問題，請查看：
+If you encounter issues:
 
-1. **智能診斷**: `hygieia dev status` 自動檢測問題
-2. **日誌分析**: `hygieia dev logs` 查看詳細錯誤
-3. **重置系統**: `hygieia deploy down && hygieia deploy up`
+1. **Smart Diagnostics**: `hygieia status` automatically detects problems
+2. **Log Analysis**: `hygieia logs` shows detailed errors
+3. **System Reset**: `hygieia deploy down && hygieia deploy up`
 
-**內建智能功能會自動解決大部分常見問題！**
+**Built-in AI features automatically resolve most common issues!**
 
-## 📊 支援的醫療系統
+## 📊 Supported Medical Systems
 
-| 產品           | 功能         | 適用場景           |
-| -------------- | ------------ | ------------------ |
-| **hi-care**    | 電子病歷管理 | 診所、醫院         |
-| **hi-hope**    | 健康風險評估 | 健檢中心、預防醫學 |
-| **hi-checkup** | 智能健檢系統 | 企業健檢、個人健康 |
+| Product        | Function                   | Use Case                  |
+| -------------- | -------------------------- | ------------------------- |
+| **hi-care**    | Electronic Medical Records | Clinics, Hospitals        |
+| **hi-hope**    | Health Risk Assessment     | Health Screening Centers  |
+| **hi-checkup** | Intelligent Health Check   | Corporate Health Programs |
+
+## 🏗️ Architecture
+
+Hygieia provides intelligent automation for:
+
+- **Container Orchestration**: Smart Docker Compose management
+- **Database Management**: Zero-wait PostgreSQL initialization
+- **SSL Configuration**: Automatic Let's Encrypt or self-signed certificates
+- **Multi-tenancy**: Support for multiple healthcare applications
+- **Configuration Sync**: Auto-sync between YAML and ENV files
+
+## 🛠️ Manual Installation
+
+If you prefer manual installation:
+
+### Linux (AMD64/ARM64)
+
+```bash
+# Download binary
+wget https://github.com/WeeMed/hygieia/releases/download/v1.0.0/hygieia-linux-amd64
+chmod +x hygieia-linux-amd64
+sudo mv hygieia-linux-amd64 /usr/local/bin/hygieia
+```
+
+### macOS (Intel/Apple Silicon)
+
+```bash
+# Download binary
+curl -LO https://github.com/WeeMed/hygieia/releases/download/v1.0.0/hygieia-darwin-arm64
+chmod +x hygieia-darwin-arm64
+sudo mv hygieia-darwin-arm64 /usr/local/bin/hygieia
+```
+
+## 🔐 Security & Verification
+
+Verify download integrity:
+
+```bash
+wget https://github.com/WeeMed/hygieia/releases/download/v1.0.0/checksums.txt
+sha256sum -c checksums.txt
+```
+
+## 📈 Performance
+
+- **🚀 10-second startup**: vs. traditional 30+ second deployments
+- **🛡️ 90% issue auto-resolution**: reduced support tickets
+- **⚡ Smart building**: only builds enabled components
+- **🔄 Zero-downtime updates**: rolling deployment support
 
 ---
 
-## 🏢 關於 WeeMed
+## 🏢 About WeeMed
 
-WeeMed 致力於提供企業級醫療資訊解決方案，讓複雜的系統部署變得簡單高效。
+WeeMed is dedicated to providing enterprise-grade healthcare information solutions, making complex system deployments simple and efficient.
 
-**企業諮詢與技術支援**: 聯繫 WeeMed 技術團隊
+🌐 **Official Website**: [https://weemed.ai/](https://weemed.ai/)
+
+**Enterprise Consulting & Technical Support**: Contact WeeMed Technical Team
 
 ---
 
-_Hygieia - 讓醫療系統部署如呼吸般自然 🌟_
+_Hygieia - Making healthcare system deployment as natural as breathing 🌟_
