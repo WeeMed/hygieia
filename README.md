@@ -70,9 +70,10 @@ hygieia deploy up
 
 ## 📖 Documentation
 
-- [📥 Download & Installation Guide](https://github.com/WeeMed/hygieia/releases/download/v1.0.0/DOWNLOAD.md)
-- [📋 Release Notes](https://github.com/WeeMed/hygieia/releases/download/v1.0.0/RELEASE_NOTES.md)
-- [⚙️ Detailed Installation Instructions](https://github.com/WeeMed/hygieia/releases/download/v1.0.0/INSTALL.md)
+All documentation is contained within this README. For additional support:
+
+- [📋 Release Notes](https://github.com/WeeMed/hygieia/releases/latest)
+- [🐛 Report Issues](https://github.com/WeeMed/hygieia/issues)
 
 ## 🔧 Common Commands
 
