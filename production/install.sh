@@ -114,33 +114,11 @@ chown "$SUDO_USER:$SUDO_USER" "$DATA_DIR" 2>/dev/null || chown "$(id -un 1000):$
 mkdir -p "$LOG_DIR"
 chown "$SUDO_USER:$SUDO_USER" "$LOG_DIR" 2>/dev/null || chown "$(id -un 1000):$(id -gn 1000)" "$LOG_DIR"
 
-# Download default configuration files
-print_info "Downloading deployment templates..."
-
-BASE_URL="https://raw.githubusercontent.com/WeeMed/hygieia/main/github/production"
-FILES=(
-    "docker-compose.yml"
-    "env.template"
-    "nginx-single.conf"
-    "nginx-multi.conf"
-)
-
-for file in "${FILES[@]}"; do
-    print_info "Downloading $file..."
-    if ! curl -fsSL "$BASE_URL/$file" -o "$SHARE_DIR/$file"; then
-        print_warning "Failed to download $file, will be downloaded on first use"
-    fi
-done
-
 # Create default configuration file
 cat > "$CONFIG_DIR/config.yaml" << 'EOF'
 # Hygieia Configuration
 # For more options, see: https://github.com/WeeMed/hygieia/docs
 
-# Deployment settings
-deployment:
-  mode: "saas"  # or "local"
-  
 # Logging
 logging:
   level: "info"  # debug, info, warn, error
