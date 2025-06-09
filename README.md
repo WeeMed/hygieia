@@ -9,7 +9,7 @@
 ## 🚀 Quick Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/WeeMed/hygieia/refs/heads/main/production/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/WeeMed/hygieia/refs/heads/main/install.sh | sudo bash
 ```
 
 ## ✨ Key Features
@@ -38,7 +38,7 @@ curl -fsSL https://raw.githubusercontent.com/WeeMed/hygieia/refs/heads/main/prod
 ### 1. Install Hygieia CLI
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/WeeMed/hygieia/refs/heads/main/production/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/WeeMed/hygieia/refs/heads/main/install.sh | sudo bash
 ```
 
 ### 2. Initialize Configuration

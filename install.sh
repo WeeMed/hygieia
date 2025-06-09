@@ -39,7 +39,7 @@ print_error() {
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
     print_error "This script must be run with sudo privileges"
-    echo "Usage: curl -fsSL https://raw.githubusercontent.com/WeeMed/hygieia/main/github/production/install.sh | sudo bash"
+    echo "Usage: curl -fsSL https://raw.githubusercontent.com/WeeMed/hygieia/main/install.sh | sudo bash"
     exit 1
 fi
 
