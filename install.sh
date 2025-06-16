@@ -114,8 +114,9 @@ chown "$SUDO_USER:$SUDO_USER" "$DATA_DIR" 2>/dev/null || chown "$(id -un 1000):$
 mkdir -p "$LOG_DIR"
 chown "$SUDO_USER:$SUDO_USER" "$LOG_DIR" 2>/dev/null || chown "$(id -un 1000):$(id -gn 1000)" "$LOG_DIR"
 
-# Create default configuration file
-cat > "$CONFIG_DIR/config.yaml" << 'EOF'
+# Create default configuration file only if it doesn't exist
+if [ ! -f "$CONFIG_DIR/config.yaml" ]; then
+    cat > "$CONFIG_DIR/config.yaml" << 'EOF'
 # Hygieia Configuration
 # For more options, see: https://github.com/WeeMed/hygieia/docs
 
@@ -127,8 +128,11 @@ logging:
 # Runtime directory (override)
 # runtime_dir: "/var/lib/hygieia"
 EOF
-
-chown "$SUDO_USER:$SUDO_USER" "$CONFIG_DIR/config.yaml" 2>/dev/null || chown "$(id -un 1000):$(id -gn 1000)" "$CONFIG_DIR/config.yaml"
+    chown "$SUDO_USER:$SUDO_USER" "$CONFIG_DIR/config.yaml" 2>/dev/null || chown "$(id -un 1000):$(id -gn 1000)" "$CONFIG_DIR/config.yaml"
+    print_info "Created default configuration file"
+else
+    print_info "Configuration file already exists, skipping creation"
+fi
 
 # Create user-specific fallback directories
 if [ -n "$SUDO_USER" ]; then
