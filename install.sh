@@ -10,14 +10,29 @@ set -e
 CLI_NAME="hygieia"
 GITHUB_REPO="WeeMed/hygieia"
 
-# Set installation paths based on OS
+# Set installation paths based on OS and PATH availability
 if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]] || [[ "$OS" == "windows" ]]; then
     # Windows paths
     INSTALL_DIR="/c/Program Files/hygieia"
     SHARE_DIR="/c/ProgramData/hygieia"
 else
-    # Unix-like paths
-    INSTALL_DIR="/usr/local/bin"
+    # Unix-like paths - choose based on what's already in PATH
+    if echo "$PATH" | grep -q "/usr/local/bin"; then
+        INSTALL_DIR="/usr/local/bin"
+    elif echo "$PATH" | grep -q "/usr/bin" && [ -w "/usr/bin" ]; then
+        INSTALL_DIR="/usr/bin"
+    elif echo "$PATH" | grep -q "/opt/bin"; then
+        INSTALL_DIR="/opt/bin"
+    elif [ -w "/usr/local/bin" ]; then
+        INSTALL_DIR="/usr/local/bin"
+    elif [ -w "/usr/bin" ]; then
+        INSTALL_DIR="/usr/bin"
+    else
+        # Fallback to user directory that's typically in PATH
+        INSTALL_DIR="$HOME/.local/bin"
+        mkdir -p "$INSTALL_DIR" 2>/dev/null || INSTALL_DIR="$HOME/bin"
+        mkdir -p "$INSTALL_DIR" 2>/dev/null || INSTALL_DIR="/tmp"
+    fi
     SHARE_DIR="/usr/local/share/hygieia"
 fi
 
@@ -198,11 +213,13 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
     if [ -x \"\$INSTALL_DIR/\$CLI_BINARY\" ]; then
         echo \"[SUCCESS] Binary file installed at: \$INSTALL_DIR/\$CLI_BINARY\"
 
-        # Try to make the command immediately available
-        if ! echo \"\$PATH\" | grep -q \"\$INSTALL_DIR\"; then
-            # Add to current PATH
+        # Check if installation directory is already in PATH
+        if echo \"\$PATH\" | grep -q \"\$INSTALL_DIR\"; then
+            echo \"[INFO] \$INSTALL_DIR is already in PATH - no configuration needed\"
+        else
+            # Add to current PATH for immediate availability
             export PATH=\"\$PATH:\$INSTALL_DIR\"
-            echo \"[INFO] Added \$INSTALL_DIR to current PATH\"
+            echo \"[INFO] Added \$INSTALL_DIR to current PATH for immediate use\"
         fi
 
         # Refresh command hash
@@ -213,20 +230,40 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
             echo \"[SUCCESS] \$CLI_BINARY command is immediately available!\"
             echo \"[INFO] Try running: \$CLI_BINARY --help\"
         else
-            echo \"[INFO] Setting up permanent PATH configuration...\"
+            # Check if we need permanent PATH configuration
+            if echo \"\$PATH\" | grep -q \"\$INSTALL_DIR\"; then
+                echo \"[SUCCESS] Installation directory is already in system PATH!\"
+                echo \"[SUCCESS] No additional PATH configuration needed.\"
+            else
+                echo \"[INFO] Setting up permanent PATH configuration...\"
 
-            # Detect shell type and profile file (comprehensive shell support)
+            # Detect shell type and profile file (macOS and comprehensive shell support)
             SHELL_PROFILE=\"\"
             SHELL_RELOAD_CMD=\"\"
-            SHELL_NAME=\"\$(basename \"\$SHELL\")\"
+            SHELL_NAME=\"\$(basename \"\$SHELL\" 2>/dev/null || echo \"unknown\")\"
 
             case \"\$SHELL_NAME\" in
                 zsh)
-                    SHELL_PROFILE=\"\$HOME/.zshrc\"
-                    SHELL_RELOAD_CMD=\"source \$HOME/.zshrc\"
+                    # macOS default shell - check both interactive and login profiles
+                    if [ -f \"\$HOME/.zshrc\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.zshrc\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.zshrc\"
+                    fi
+                    # Also check .zprofile for login shell PATH settings
+                    if [ -f \"\$HOME/.zprofile\" ] && [ -z \"\$SHELL_PROFILE\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.zprofile\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.zprofile\"
+                    fi
+                    # Create .zshrc if neither exists (common on fresh macOS)
+                    if [ -z \"\$SHELL_PROFILE\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.zshrc\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.zshrc\"
+                        # Create empty .zshrc if it doesn't exist
+                        touch \"\$HOME/.zshrc\" 2>/dev/null || true
+                    fi
                     ;;
                 bash)
-                    # Check for different bash profile files
+                    # macOS bash - follow macOS conventions
                     if [ -f \"\$HOME/.bash_profile\" ]; then
                         SHELL_PROFILE=\"\$HOME/.bash_profile\"
                         SHELL_RELOAD_CMD=\"source \$HOME/.bash_profile\"
@@ -236,6 +273,14 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
                     elif [ -f \"\$HOME/.profile\" ]; then
                         SHELL_PROFILE=\"\$HOME/.profile\"
                         SHELL_RELOAD_CMD=\"source \$HOME/.profile\"
+                    elif [ -f \"\$HOME/.bash_login\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.bash_login\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.bash_login\"
+                    else
+                        # Create .bash_profile for new macOS bash users
+                        SHELL_PROFILE=\"\$HOME/.bash_profile\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.bash_profile\"
+                        touch \"\$HOME/.bash_profile\" 2>/dev/null || true
                     fi
                     ;;
                 fish)
@@ -243,22 +288,54 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
                     SHELL_RELOAD_CMD=\"source \$HOME/.config/fish/config.fish\"
                     ;;
                 csh|tcsh)
-                    SHELL_PROFILE=\"\$HOME/.cshrc\"
-                    SHELL_RELOAD_CMD=\"source \$HOME/.cshrc\"
+                    if [ -f \"\$HOME/.cshrc\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.cshrc\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.cshrc\"
+                    elif [ -f \"\$HOME/.tcshrc\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.tcshrc\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.tcshrc\"
+                    else
+                        # Create .cshrc for new csh users
+                        SHELL_PROFILE=\"\$HOME/.cshrc\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.cshrc\"
+                        touch \"\$HOME/.cshrc\" 2>/dev/null || true
+                    fi
                     ;;
                 ksh)
-                    SHELL_PROFILE=\"\$HOME/.kshrc\"
-                    SHELL_RELOAD_CMD=\"source \$HOME/.kshrc\"
+                    if [ -f \"\$HOME/.kshrc\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.kshrc\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.kshrc\"
+                    elif [ -f \"\$HOME/.profile\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.profile\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.profile\"
+                    else
+                        # Create .profile for ksh users
+                        SHELL_PROFILE=\"\$HOME/.profile\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.profile\"
+                        touch \"\$HOME/.profile\" 2>/dev/null || true
+                    fi
                     ;;
-                *)
-                    # Fallback: try common profile files
+                sh)
+                    # POSIX shell fallback
                     if [ -f \"\$HOME/.profile\" ]; then
                         SHELL_PROFILE=\"\$HOME/.profile\"
                         SHELL_RELOAD_CMD=\"source \$HOME/.profile\"
-                    elif [ -f \"\$HOME/.bashrc\" ]; then
-                        SHELL_PROFILE=\"\$HOME/.bashrc\"
-                        SHELL_RELOAD_CMD=\"source \$HOME/.bashrc\"
+                    else
+                        # Create .profile for POSIX shell users
+                        SHELL_PROFILE=\"\$HOME/.profile\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.profile\"
+                        touch \"\$HOME/.profile\" 2>/dev/null || true
                     fi
+                    ;;
+                *)
+                    # Universal fallback for unknown shells
+                    for profile_file in \"\$HOME/.profile\" \"\$HOME/.bashrc\" \"\$HOME/.zshrc\"; do
+                        if [ -f \"\$profile_file\" ]; then
+                            SHELL_PROFILE=\"\$profile_file\"
+                            SHELL_RELOAD_CMD=\"source \$profile_file\"
+                            break
+                        fi
+                    done
                     ;;
             esac
 
@@ -316,6 +393,8 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
                 echo \"  Or add the above line to your shell profile\"
             fi
 
+                            fi
+            fi
             echo \"[INFO] Installation complete. You can now use \$CLI_BINARY\"
         fi
     else
