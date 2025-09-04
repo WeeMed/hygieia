@@ -213,29 +213,28 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
     if [ -x \"\$INSTALL_DIR/\$CLI_BINARY\" ]; then
         echo \"[SUCCESS] Binary file installed at: \$INSTALL_DIR/\$CLI_BINARY\"
 
-        # Check if installation directory is already in PATH
-        if echo \"\$PATH\" | grep -q \"\$INSTALL_DIR\"; then
-            echo \"[INFO] \$INSTALL_DIR is already in PATH - no configuration needed\"
-        else
-            # Add to current PATH for immediate availability
+        # Always ensure PATH includes installation directory for current session
+        if ! echo \"\$PATH\" | grep -q \"\$INSTALL_DIR\"; then
             export PATH=\"\$PATH:\$INSTALL_DIR\"
-            echo \"[INFO] Added \$INSTALL_DIR to current PATH for immediate use\"
+            echo \"[INFO] Added \$INSTALL_DIR to current PATH\"
         fi
 
         # Refresh command hash
         hash -r 2>/dev/null || true
 
-        # Test command availability
-        if command -v \"\$CLI_BINARY\" >/dev/null 2>&1; then
-            echo \"[SUCCESS] \$CLI_BINARY command is immediately available!\"
-            echo \"[INFO] Try running: \$CLI_BINARY --help\"
-        else
-            # Check if we need permanent PATH configuration
-            if echo \"\$PATH\" | grep -q \"\$INSTALL_DIR\"; then
-                echo \"[SUCCESS] Installation directory is already in system PATH!\"
-                echo \"[SUCCESS] No additional PATH configuration needed.\"
-            else
-                echo \"[INFO] Setting up permanent PATH configuration...\"
+        # Provide clear usage instructions
+        echo \"[SUCCESS] Installation completed!\"
+        echo \"[INFO] Binary location: \$INSTALL_DIR/\$CLI_BINARY\"
+        echo \"\"
+        echo \"[INFO] To start using hygieia immediately, run:\"
+        echo \"  export PATH=\\\"\$PATH:\$INSTALL_DIR\\\"\"
+        echo \"  hygieia --help\"
+        echo \"\"
+        echo \"[INFO] For permanent setup, restart your terminal or run:\"
+        echo \"  source ~/.bashrc  # (or ~/.zshrc for zsh users)\"
+
+        # Note: We don't rely on command testing in sudo environment
+        # as it may not reflect user's actual shell session
 
             # Detect shell type and profile file (macOS and comprehensive shell support)
             SHELL_PROFILE=\"\"
