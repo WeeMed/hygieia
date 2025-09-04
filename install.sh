@@ -97,11 +97,10 @@ download_binary() {
         CLI_BINARY="$CLI_NAME"
     fi
 
-    local download_url="https://github.com/${GITHUB_REPO}/releases/download/${version}/${binary_name}"
+    local download_url="https://github.com/${GITHUB_REPO}/releases/download/$version/${binary_name}"
     local temp_dir=$(mktemp -d)
 
-    print_info "Downloading ${CLI_NAME} ${version} for ${OS}/${ARCH}..."
-    print_info "Download URL: ${download_url}"
+    # Note: print_info calls moved to main function to avoid stdout capture
 
     if command -v curl >/dev/null 2>&1; then
         if ! curl -L -o "${temp_dir}/${CLI_BINARY}" "${download_url}"; then
@@ -151,10 +150,63 @@ install_binary() {
 
         # Check if script is run with sudo (required for system installation on Unix-like systems)
         if [ "$EUID" -ne 0 ]; then
-            print_error "This script must be run with sudo for system installation"
-            print_info "Usage: curl -fsSL https://raw.githubusercontent.com/${GITHUB_REPO}/main/install.sh | sudo bash"
-            rm -rf "$temp_dir"
-            exit 1
+            print_warning "This script requires sudo for system installation"
+            print_info "Please enter your sudo password when prompted..."
+
+            # Store current state and re-run with sudo
+            TEMP_FILE="$temp_dir"
+            if command -v sudo >/dev/null 2>&1; then
+                print_info "Re-running script with sudo..."
+                # Use a different approach - create a temporary script with preserved state
+                SCRIPT_CONTENT="#!/bin/bash
+# Temporary script to complete installation with sudo
+export VERSION=\"$VERSION\"
+export OS=\"$OS\"
+export ARCH=\"$ARCH\"
+export INSTALL_DIR=\"$INSTALL_DIR\"
+export SHARE_DIR=\"$SHARE_DIR\"
+export CLI_NAME=\"$CLI_NAME\"
+export CLI_BINARY=\"$CLI_BINARY\"
+export GITHUB_REPO=\"$GITHUB_REPO\"
+export TEMP_FILE=\"$TEMP_FILE\"
+
+# Continue with installation
+mkdir -p \"\$INSTALL_DIR\"
+if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
+    echo '[SUCCESS] Binary installed successfully!'
+    echo \"[INFO] Binary location: \$INSTALL_DIR/\$CLI_BINARY\"
+    mkdir -p \"\$SHARE_DIR\"
+    echo \"[SUCCESS] Hygieia CLI \$VERSION installed successfully!\"
+    echo \"\"
+    echo '[INFO] Quick start:'
+    echo '  1. hygieia --help          # Show help'
+    echo '  2. hygieia init            # Initialize project'
+    echo '  3. hygieia deploy up       # Deploy services'
+    echo \"\"
+    echo \"[INFO] Documentation: https://github.com/\$GITHUB_REPO\"
+else
+    echo '[ERROR] Failed to install binary'
+    exit 1
+fi
+
+# Cleanup
+rm -rf \"\$TEMP_FILE\"
+"
+                echo "$SCRIPT_CONTENT" > "/tmp/hygieia_install_sudo.sh"
+                chmod +x "/tmp/hygieia_install_sudo.sh"
+                if sudo bash "/tmp/hygieia_install_sudo.sh"; then
+                    # Installation completed successfully in sudo script
+                    exit 0
+                else
+                    print_error "Installation failed"
+                    rm -rf "$temp_dir"
+                    exit 1
+                fi
+            else
+                print_error "sudo command not found. Please install sudo or run this script with root privileges."
+                rm -rf "$temp_dir"
+                exit 1
+            fi
         fi
     fi
 
@@ -190,6 +242,8 @@ main() {
     print_success "Latest version: $VERSION"
 
     # Download binary
+    print_info "Downloading ${CLI_NAME} ${VERSION} for ${OS}/${ARCH}..."
+    print_info "Download URL: https://github.com/${GITHUB_REPO}/releases/download/${VERSION}/hygieia-${OS}-${ARCH}"
     TEMP_DIR=$(download_binary "$VERSION")
 
     # Install binary
