@@ -50,7 +50,6 @@ install_cli() {
         *)          print_error "Unsupported architecture: $(uname -m)"; exit 1 ;;
     esac
 
-    print_info "Detected platform: $OS/$ARCH"
 
     # Get latest version
     if command -v curl >/dev/null 2>&1; then
@@ -67,7 +66,6 @@ install_cli() {
         exit 1
     fi
 
-    print_info "Latest version: $VERSION"
 
     BINARY_NAME="${CLI_NAME}-${OS}-${ARCH}"
     if [[ "$OS" == "windows" ]]; then
@@ -76,21 +74,26 @@ install_cli() {
     fi
 
     DOWNLOAD_URL="https://github.com/${GITHUB_REPO}/releases/download/$VERSION/${BINARY_NAME}"
-    print_info "Downloading $BINARY_NAME..."
 
     # Create temp directory
     TEMP_DIR=$(mktemp -d)
 
     # Download binary
+    echo "Temp dir: $TEMP_DIR"
+    echo "Download URL: $DOWNLOAD_URL"
+    echo "Target file: ${TEMP_DIR}/${BINARY_NAME}"
+
     if command -v curl >/dev/null 2>&1; then
         if ! curl -L -o "${TEMP_DIR}/${BINARY_NAME}" "${DOWNLOAD_URL}"; then
             print_error "Failed to download binary"
+            ls -la "$TEMP_DIR" 2>/dev/null || echo "Temp dir not accessible"
             rm -rf "$TEMP_DIR"
             exit 1
         fi
     elif command -v wget >/dev/null 2>&1; then
         if ! wget -O "${TEMP_DIR}/${BINARY_NAME}" "${DOWNLOAD_URL}"; then
             print_error "Failed to download binary"
+            ls -la "$TEMP_DIR" 2>/dev/null || echo "Temp dir not accessible"
             rm -rf "$TEMP_DIR"
             exit 1
         fi
@@ -100,9 +103,25 @@ install_cli() {
         exit 1
     fi
 
+    # Check if file was downloaded
+    if [ ! -f "${TEMP_DIR}/${BINARY_NAME}" ]; then
+        print_error "Downloaded file not found: ${TEMP_DIR}/${BINARY_NAME}"
+        ls -la "$TEMP_DIR"
+        rm -rf "$TEMP_DIR"
+        exit 1
+    fi
+
+    echo "File downloaded successfully"
+    ls -la "${TEMP_DIR}/${BINARY_NAME}"
+
     # Make executable
     if [[ "$OS" != "windows" ]]; then
-        chmod +x "${TEMP_DIR}/${BINARY_NAME}"
+        if ! chmod +x "${TEMP_DIR}/${BINARY_NAME}"; then
+            print_error "Failed to make file executable"
+            rm -rf "$TEMP_DIR"
+            exit 1
+        fi
+        echo "File made executable"
     fi
 
     # Install to system directory (plane.so style)
@@ -117,9 +136,42 @@ install_cli() {
             mkdir -p "$INSTALL_DIR"
             mv "${TEMP_DIR}/${BINARY_NAME}" "$INSTALL_DIR/$CLI_BINARY"
         else
-            print_info "Installing to system directory (requires sudo)..."
-            sudo mkdir -p "$INSTALL_DIR"
-            sudo mv "${TEMP_DIR}/${BINARY_NAME}" "$INSTALL_DIR/$CLI_BINARY"
+            # Force system installation - require sudo
+            if ! command -v sudo >/dev/null 2>&1; then
+                print_error "sudo is required for system installation"
+                exit 1
+            fi
+
+            # Use sudo to install, but ensure it can access the temp file
+            echo "Temp file: ${TEMP_DIR}/${BINARY_NAME}"
+            ls -la "${TEMP_DIR}/${BINARY_NAME}"
+
+            echo "Running sudo commands..."
+            if ! sudo mkdir -p "$INSTALL_DIR"; then
+                print_error "Failed to create install directory"
+                echo "mkdir failed, checking sudo..."
+                sudo -v 2>&1 || echo "sudo authentication failed"
+                exit 1
+            fi
+            echo "mkdir completed"
+
+            if ! sudo cp "${TEMP_DIR}/${BINARY_NAME}" "$INSTALL_DIR/$CLI_BINARY"; then
+                print_error "Failed to copy binary to install directory"
+                echo "cp failed, checking temp file..."
+                ls -la "${TEMP_DIR}/${BINARY_NAME}" 2>/dev/null || echo "temp file not found"
+                echo "checking install dir..."
+                ls -la "$INSTALL_DIR" 2>/dev/null || echo "install dir not accessible"
+                exit 1
+            fi
+            echo "cp completed"
+
+            if ! sudo chmod +x "$INSTALL_DIR/$CLI_BINARY"; then
+                print_error "Failed to make binary executable"
+                echo "chmod failed, checking installed file..."
+                ls -la "$INSTALL_DIR/$CLI_BINARY" 2>/dev/null || echo "installed file not found"
+                exit 1
+            fi
+            echo "chmod completed"
         fi
     fi
 
@@ -127,15 +179,12 @@ install_cli() {
     rm -rf "$TEMP_DIR"
 
     print_success "Hygieia CLI $VERSION installed successfully!"
-    print_info "Binary location: $INSTALL_DIR/$CLI_BINARY"
 
     # Verify installation
     if [ -x "$INSTALL_DIR/$CLI_BINARY" ]; then
         print_success "Installation completed successfully!"
         if command -v "$CLI_BINARY" >/dev/null 2>&1; then
             print_success "$CLI_BINARY command is available!"
-        else
-            print_info "Note: You may need to restart your shell or run: export PATH=\$PATH:$INSTALL_DIR"
         fi
     else
         print_error "Installation failed - binary not found"
