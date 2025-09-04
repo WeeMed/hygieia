@@ -222,19 +222,25 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
         # Refresh command hash
         hash -r 2>/dev/null || true
 
-        # Provide clear usage instructions
-        echo \"[SUCCESS] Installation completed!\"
-        echo \"[INFO] Binary location: \$INSTALL_DIR/\$CLI_BINARY\"
-        echo \"\"
-        echo \"[INFO] To start using hygieia immediately, run:\"
-        echo \"  export PATH=\\\"\$PATH:\$INSTALL_DIR\\\"\"
-        echo \"  hygieia --help\"
-        echo \"\"
-        echo \"[INFO] For permanent setup, restart your terminal or run:\"
-        echo \"  source ~/.bashrc  # (or ~/.zshrc for zsh users)\"
-
-        # Note: We don't rely on command testing in sudo environment
-        # as it may not reflect user's actual shell session
+        # Test immediate availability (similar to npm global installs)
+        if command -v \"\$CLI_BINARY\" >/dev/null 2>&1; then
+            echo \"[SUCCESS] hygieia is now available! 🎉\"
+            echo \"\"
+            echo \"[INFO] Try it now:\"
+            echo \"  \$CLI_BINARY --help\"
+            echo \"\"
+            echo \"[INFO] The command is permanently available in your PATH.\"
+        else
+            # Fallback: provide manual setup instructions
+            echo \"[SUCCESS] Installation completed!\"
+            echo \"[INFO] Binary installed at: \$INSTALL_DIR/\$CLI_BINARY\"
+            echo \"\"
+            echo \"[INFO] To use hygieia, run one of these commands:\"
+            echo \"  \$CLI_BINARY --help\"
+            echo \"  export PATH=\\\"\$PATH:\$INSTALL_DIR\\\" && \$CLI_BINARY --help\"
+            echo \"\"
+            echo \"[INFO] For permanent setup, restart your terminal.\"
+        fi
 
             # Detect shell type and profile file (macOS and comprehensive shell support)
             SHELL_PROFILE=\"\"
