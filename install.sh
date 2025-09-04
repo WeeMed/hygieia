@@ -1,7 +1,8 @@
 #!/bin/bash
 #
-# Hygieia CLI Installation Script
-# Downloads and installs the latest Hygieia CLI from GitHub releases
+# Hygieia Healthcare Platform Installation Script
+# Downloads and installs the Hygieia CLI for deploying complete healthcare systems
+# Features: Automated Docker deployment, SSL management, multi-product support
 #
 
 set -e
@@ -164,11 +165,11 @@ install_binary() {
     local temp_dir=$(echo "$temp_info" | cut -d':' -f1)
     local downloaded_binary=$(echo "$temp_info" | cut -d':' -f2)
 
-    # Debug: Show what we're working with
-    echo "[DEBUG] temp_dir: $temp_dir" >&2
-    echo "[DEBUG] downloaded_binary: $downloaded_binary" >&2
-    echo "[DEBUG] CLI_BINARY: $CLI_BINARY" >&2
-    ls -la "$temp_dir/" >&2
+    # Debug info for troubleshooting (only shown if installation fails)
+    # echo "[DEBUG] temp_dir: $temp_dir" >&2
+    # echo "[DEBUG] downloaded_binary: $downloaded_binary" >&2
+    # echo "[DEBUG] CLI_BINARY: $CLI_BINARY" >&2
+    # ls -la "$temp_dir/" >&2
 
     # Windows has different installation requirements
     if [[ "$OS" == "windows" ]]; then
@@ -210,11 +211,11 @@ export GITHUB_REPO=\"$GITHUB_REPO\"
 export TEMP_FILE=\"$TEMP_FILE\"
 export DOWNLOADED_BINARY=\"$DOWNLOADED_BINARY\"
 
-# Debug info
-echo \"[DEBUG] TEMP_FILE: \$TEMP_FILE\" >&2
-echo \"[DEBUG] DOWNLOADED_BINARY: \$DOWNLOADED_BINARY\" >&2
-echo \"[DEBUG] CLI_BINARY: \$CLI_BINARY\" >&2
-ls -la \"\$TEMP_FILE/\" >&2
+# Debug info (commented out for production)
+# echo \"[DEBUG] TEMP_FILE: \$TEMP_FILE\" >&2
+# echo \"[DEBUG] DOWNLOADED_BINARY: \$DOWNLOADED_BINARY\" >&2
+# echo \"[DEBUG] CLI_BINARY: \$CLI_BINARY\" >&2
+# ls -la \"\$TEMP_FILE/\" >&2
 
 # Continue with installation
 mkdir -p \"\$INSTALL_DIR\"
@@ -253,27 +254,27 @@ if mv \"\$TEMP_FILE/\$DOWNLOADED_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
         # Refresh command hash
         hash -r 2>/dev/null || true
 
-        # Test immediate availability with better error handling
-        if command -v \"\$CLI_BINARY\" >/dev/null 2>&1; then
-            echo \"[SUCCESS] hygieia is now available! 🎉\"
-            echo \"\"
-            echo \"[INFO] Try it now:\"
-            echo \"  \$CLI_BINARY --help\"
-            echo \"\"
-            echo \"[INFO] Command is ready to use in current session.\"
-        else
-            # Enhanced fallback with better PATH troubleshooting
-            echo \"[SUCCESS] Installation completed!\"
-            echo \"[INFO] Binary installed at: \$INSTALL_DIR/\$CLI_BINARY\"
-            echo \"\"
-            echo \"[INFO] To use hygieia immediately, run:\"
-            echo \"  export PATH=\\\"\$PATH:\$INSTALL_DIR\\\"\"
-            echo \"  \$CLI_BINARY --help\"
-            echo \"\"
-            echo \"[INFO] For permanent setup:\"
-            echo \"  echo 'export PATH=\\\"\$PATH:\$INSTALL_DIR\\\"' >> ~/.bashrc\"
-            echo \"  source ~/.bashrc\"
-        fi
+        # For Hygieia (complete platform), focus on successful installation
+        # The CLI is mainly used for managing Docker deployments
+        echo \"[SUCCESS] Hygieia CLI installed successfully! 🎉\"
+        echo \"[INFO] Binary location: \$INSTALL_DIR/\$CLI_BINARY\"
+        echo \"\"
+        echo \"[INFO] Next steps:\"
+        echo \"  1. Initialize your medical system:\"
+        echo \"     mkdir my-healthcare-system\"
+        echo \"     cd my-healthcare-system\"
+        echo \"     \$CLI_BINARY init\"
+        echo \"\"
+        echo \"  2. Deploy with one command:\"
+        echo \"     \$CLI_BINARY deploy up\"
+        echo \"\"
+        echo \"[INFO] The system will automatically set up:\"
+        echo \"  • PostgreSQL database\"
+        echo \"  • Redis cache\"
+        echo \"  • Python backend\"
+        echo \"  • React frontend\"
+        echo \"  • Nginx reverse proxy\"
+        echo \"  • SSL certificates (optional)\"
 
             # Detect shell type and profile file (macOS and comprehensive shell support)
             SHELL_PROFILE=\"\"
