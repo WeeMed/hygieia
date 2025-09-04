@@ -192,11 +192,135 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
     echo \"[INFO] Documentation: https://github.com/\$GITHUB_REPO\"
 
     # Test the installation
-    if command -v hygieia >/dev/null 2>&1; then
-        echo \"[SUCCESS] hygieia command is now available!\"
+    echo \"[INFO] Verifying installation...\"
+
+    # First check if the binary file exists and is executable
+    if [ -x \"\$INSTALL_DIR/\$CLI_BINARY\" ]; then
+        echo \"[SUCCESS] Binary file installed at: \$INSTALL_DIR/\$CLI_BINARY\"
+
+        # Try to make the command immediately available
+        if ! echo \"\$PATH\" | grep -q \"\$INSTALL_DIR\"; then
+            # Add to current PATH
+            export PATH=\"\$PATH:\$INSTALL_DIR\"
+            echo \"[INFO] Added \$INSTALL_DIR to current PATH\"
+        fi
+
+        # Refresh command hash
+        hash -r 2>/dev/null || true
+
+        # Test command availability
+        if command -v \"\$CLI_BINARY\" >/dev/null 2>&1; then
+            echo \"[SUCCESS] \$CLI_BINARY command is immediately available!\"
+            echo \"[INFO] Try running: \$CLI_BINARY --help\"
+        else
+            echo \"[INFO] Setting up permanent PATH configuration...\"
+
+            # Detect shell type and profile file (comprehensive shell support)
+            SHELL_PROFILE=\"\"
+            SHELL_RELOAD_CMD=\"\"
+            SHELL_NAME=\"\$(basename \"\$SHELL\")\"
+
+            case \"\$SHELL_NAME\" in
+                zsh)
+                    SHELL_PROFILE=\"\$HOME/.zshrc\"
+                    SHELL_RELOAD_CMD=\"source \$HOME/.zshrc\"
+                    ;;
+                bash)
+                    # Check for different bash profile files
+                    if [ -f \"\$HOME/.bash_profile\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.bash_profile\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.bash_profile\"
+                    elif [ -f \"\$HOME/.bashrc\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.bashrc\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.bashrc\"
+                    elif [ -f \"\$HOME/.profile\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.profile\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.profile\"
+                    fi
+                    ;;
+                fish)
+                    SHELL_PROFILE=\"\$HOME/.config/fish/config.fish\"
+                    SHELL_RELOAD_CMD=\"source \$HOME/.config/fish/config.fish\"
+                    ;;
+                csh|tcsh)
+                    SHELL_PROFILE=\"\$HOME/.cshrc\"
+                    SHELL_RELOAD_CMD=\"source \$HOME/.cshrc\"
+                    ;;
+                ksh)
+                    SHELL_PROFILE=\"\$HOME/.kshrc\"
+                    SHELL_RELOAD_CMD=\"source \$HOME/.kshrc\"
+                    ;;
+                *)
+                    # Fallback: try common profile files
+                    if [ -f \"\$HOME/.profile\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.profile\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.profile\"
+                    elif [ -f \"\$HOME/.bashrc\" ]; then
+                        SHELL_PROFILE=\"\$HOME/.bashrc\"
+                        SHELL_RELOAD_CMD=\"source \$HOME/.bashrc\"
+                    fi
+                    ;;
+            esac
+
+            # Update shell profile with PATH (shell-specific syntax)
+            if [ -n \"\$SHELL_PROFILE\" ] && [ -w \"\$SHELL_PROFILE\" ]; then
+                if ! grep -q \"\$INSTALL_DIR\" \"\$SHELL_PROFILE\" 2>/dev/null; then
+                    echo \"\" >> \"\$SHELL_PROFILE\"
+                    echo \"# Added by Hygieia CLI installer\" >> \"\$SHELL_PROFILE\"
+
+                    # Add PATH based on shell type
+                    case \"\$SHELL_NAME\" in
+                        fish)
+                            echo \"set -U fish_user_paths \$INSTALL_DIR \$fish_user_paths\" >> \"\$SHELL_PROFILE\"
+                            ;;
+                        csh|tcsh)
+                            echo \"setenv PATH \\\"\$PATH:\$INSTALL_DIR\\\"\" >> \"\$SHELL_PROFILE\"
+                            ;;
+                        *)
+                            # Default for bash, zsh, ksh and others
+                            echo \"export PATH=\\\"\$PATH:\$INSTALL_DIR\\\"\" >> \"\$SHELL_PROFILE\"
+                            ;;
+                    esac
+
+                    echo \"[SUCCESS] Added \$INSTALL_DIR to \$SHELL_PROFILE\"
+
+                    # Try to reload the profile immediately
+                    if eval \"\$SHELL_RELOAD_CMD\" 2>/dev/null; then
+                        echo \"[SUCCESS] Shell profile reloaded\"
+                        # Check again after reload
+                        if command -v \"\$CLI_BINARY\" >/dev/null 2>&1; then
+                            echo \"[SUCCESS] \$CLI_BINARY command is now available!\"
+                            echo \"[INFO] Try running: \$CLI_BINARY --help\"
+                            exit 0
+                        fi
+                    else
+                        echo \"[INFO] Please run: \$SHELL_RELOAD_CMD\"
+                    fi
+                else
+                    echo \"[INFO] \$INSTALL_DIR already in PATH via \$SHELL_PROFILE\"
+                fi
+            else
+                echo \"[WARNING] Could not update shell profile automatically\"
+                echo \"[INFO] Please manually add to your PATH based on your shell:\"
+                case \"\$SHELL_NAME\" in
+                    fish)
+                        echo \"  set -U fish_user_paths /usr/local/bin \$fish_user_paths\"
+                        ;;
+                    csh|tcsh)
+                        echo \"  setenv PATH \\\"\$PATH:/usr/local/bin\\\"\"
+                        ;;
+                    *)
+                        echo \"  export PATH=\\\"\$PATH:/usr/local/bin\\\"\"
+                        ;;
+                esac
+                echo \"  Or add the above line to your shell profile\"
+            fi
+
+            echo \"[INFO] Installation complete. You can now use \$CLI_BINARY\"
+        fi
     else
-        echo \"[WARNING] hygieia command may not be in PATH. You might need to restart your shell.\"
-        echo \"[INFO] You can also run: export PATH=\\\"\$PATH:/usr/local/bin\\\"\"
+        echo \"[ERROR] Binary file not found or not executable at: \$INSTALL_DIR/\$CLI_BINARY\"
+        exit 1
     fi
 else
     echo '[ERROR] Failed to install binary'
