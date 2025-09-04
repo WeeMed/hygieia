@@ -46,8 +46,6 @@ print_error() {
 
 # Get latest version from GitHub releases
 get_latest_version() {
-    print_info "Fetching latest version from GitHub..."
-
     # Try to get latest release info
     if command -v curl >/dev/null 2>&1; then
         LATEST_VERSION=$(curl -s "https://api.github.com/repos/${GITHUB_REPO}/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
@@ -63,7 +61,6 @@ get_latest_version() {
         exit 1
     fi
 
-    print_success "Latest version: $LATEST_VERSION"
     echo "$LATEST_VERSION"
 }
 
@@ -188,7 +185,9 @@ main() {
     detect_platform
 
     # Get latest version
+    print_info "Fetching latest version from GitHub..."
     VERSION=$(get_latest_version)
+    print_success "Latest version: $VERSION"
 
     # Download binary
     TEMP_DIR=$(download_binary "$VERSION")
