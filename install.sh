@@ -176,6 +176,12 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
     echo '[SUCCESS] Binary installed successfully!'
     echo \"[INFO] Binary location: \$INSTALL_DIR/\$CLI_BINARY\"
     mkdir -p \"\$SHARE_DIR\"
+
+    # Update shell command cache
+    if command -v hash >/dev/null 2>&1; then
+        hash -r 2>/dev/null || true
+    fi
+
     echo \"[SUCCESS] Hygieia CLI \$VERSION installed successfully!\"
     echo \"\"
     echo '[INFO] Quick start:'
@@ -184,6 +190,14 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
     echo '  3. hygieia deploy up       # Deploy services'
     echo \"\"
     echo \"[INFO] Documentation: https://github.com/\$GITHUB_REPO\"
+
+    # Test the installation
+    if command -v hygieia >/dev/null 2>&1; then
+        echo \"[SUCCESS] hygieia command is now available!\"
+    else
+        echo \"[WARNING] hygieia command may not be in PATH. You might need to restart your shell.\"
+        echo \"[INFO] You can also run: export PATH=\\\"\$PATH:/usr/local/bin\\\"\"
+    fi
 else
     echo '[ERROR] Failed to install binary'
     exit 1
