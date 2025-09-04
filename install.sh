@@ -10,29 +10,44 @@ set -e
 CLI_NAME="hygieia"
 GITHUB_REPO="WeeMed/hygieia"
 
-# Set installation paths based on OS and PATH availability
+# Set installation paths based on OS and write permissions (npm-like approach)
 if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]] || [[ "$OS" == "windows" ]]; then
     # Windows paths
     INSTALL_DIR="/c/Program Files/hygieia"
     SHARE_DIR="/c/ProgramData/hygieia"
 else
-    # Unix-like paths - choose based on what's already in PATH
-    if echo "$PATH" | grep -q "/usr/local/bin"; then
+    # Unix-like paths - prioritize directories that are writable and commonly in PATH
+    # Similar to npm's global installation behavior
+
+    # Try /usr/local/bin first (most common for user installations)
+    if [ -d "/usr/local/bin" ] && [ -w "/usr/local/bin" ]; then
         INSTALL_DIR="/usr/local/bin"
-    elif echo "$PATH" | grep -q "/usr/bin" && [ -w "/usr/bin" ]; then
-        INSTALL_DIR="/usr/bin"
-    elif echo "$PATH" | grep -q "/opt/bin"; then
+    # Try /usr/local/bin even if it doesn't exist (create it)
+    elif [ -w "/usr/local" ]; then
+        INSTALL_DIR="/usr/local/bin"
+        mkdir -p "$INSTALL_DIR" 2>/dev/null
+    # Try /opt/bin
+    elif [ -d "/opt/bin" ] && [ -w "/opt/bin" ]; then
         INSTALL_DIR="/opt/bin"
-    elif [ -w "/usr/local/bin" ]; then
-        INSTALL_DIR="/usr/local/bin"
-    elif [ -w "/usr/bin" ]; then
+    elif [ -w "/opt" ]; then
+        INSTALL_DIR="/opt/bin"
+        mkdir -p "$INSTALL_DIR" 2>/dev/null
+    # Try /usr/bin (system directory - requires sudo)
+    elif [ -d "/usr/bin" ] && [ -w "/usr/bin" ]; then
         INSTALL_DIR="/usr/bin"
+    # Fallback to user directory (always works, no sudo needed)
     else
-        # Fallback to user directory that's typically in PATH
-        INSTALL_DIR="$HOME/.local/bin"
-        mkdir -p "$INSTALL_DIR" 2>/dev/null || INSTALL_DIR="$HOME/bin"
-        mkdir -p "$INSTALL_DIR" 2>/dev/null || INSTALL_DIR="/tmp"
+        # Check if ~/.local/bin exists and is in PATH
+        if echo "$PATH" | grep -q "$HOME/.local/bin"; then
+            INSTALL_DIR="$HOME/.local/bin"
+            mkdir -p "$INSTALL_DIR" 2>/dev/null
+        else
+            # Use ~/bin as fallback (also commonly in PATH)
+            INSTALL_DIR="$HOME/bin"
+            mkdir -p "$INSTALL_DIR" 2>/dev/null
+        fi
     fi
+
     SHARE_DIR="/usr/local/share/hygieia"
 fi
 
@@ -213,33 +228,35 @@ if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
     if [ -x \"\$INSTALL_DIR/\$CLI_BINARY\" ]; then
         echo \"[SUCCESS] Binary file installed at: \$INSTALL_DIR/\$CLI_BINARY\"
 
-        # Always ensure PATH includes installation directory for current session
+        # Always ensure PATH includes installation directory
         if ! echo \"\$PATH\" | grep -q \"\$INSTALL_DIR\"; then
             export PATH=\"\$PATH:\$INSTALL_DIR\"
-            echo \"[INFO] Added \$INSTALL_DIR to current PATH\"
+            echo \"[INFO] Added \$INSTALL_DIR to current PATH session\"
         fi
 
         # Refresh command hash
         hash -r 2>/dev/null || true
 
-        # Test immediate availability (similar to npm global installs)
+        # Test immediate availability with better error handling
         if command -v \"\$CLI_BINARY\" >/dev/null 2>&1; then
             echo \"[SUCCESS] hygieia is now available! 🎉\"
             echo \"\"
             echo \"[INFO] Try it now:\"
             echo \"  \$CLI_BINARY --help\"
             echo \"\"
-            echo \"[INFO] The command is permanently available in your PATH.\"
+            echo \"[INFO] Command is ready to use in current session.\"
         else
-            # Fallback: provide manual setup instructions
+            # Enhanced fallback with better PATH troubleshooting
             echo \"[SUCCESS] Installation completed!\"
             echo \"[INFO] Binary installed at: \$INSTALL_DIR/\$CLI_BINARY\"
             echo \"\"
-            echo \"[INFO] To use hygieia, run one of these commands:\"
+            echo \"[INFO] To use hygieia immediately, run:\"
+            echo \"  export PATH=\\\"\$PATH:\$INSTALL_DIR\\\"\"
             echo \"  \$CLI_BINARY --help\"
-            echo \"  export PATH=\\\"\$PATH:\$INSTALL_DIR\\\" && \$CLI_BINARY --help\"
             echo \"\"
-            echo \"[INFO] For permanent setup, restart your terminal.\"
+            echo \"[INFO] For permanent setup:\"
+            echo \"  echo 'export PATH=\\\"\$PATH:\$INSTALL_DIR\\\"' >> ~/.bashrc\"
+            echo \"  source ~/.bashrc\"
         fi
 
             # Detect shell type and profile file (macOS and comprehensive shell support)
