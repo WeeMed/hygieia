@@ -160,7 +160,15 @@ download_binary() {
 
 # Install binary
 install_binary() {
-    local temp_dir=$1
+    local temp_info=$1
+    local temp_dir=$(echo "$temp_info" | cut -d':' -f1)
+    local downloaded_binary=$(echo "$temp_info" | cut -d':' -f2)
+
+    # Debug: Show what we're working with
+    echo "[DEBUG] temp_dir: $temp_dir" >&2
+    echo "[DEBUG] downloaded_binary: $downloaded_binary" >&2
+    echo "[DEBUG] CLI_BINARY: $CLI_BINARY" >&2
+    ls -la "$temp_dir/" >&2
 
     # Windows has different installation requirements
     if [[ "$OS" == "windows" ]]; then
@@ -185,6 +193,7 @@ install_binary() {
 
             # Store current state and re-run with sudo
             TEMP_FILE="$temp_dir"
+            DOWNLOADED_BINARY="$downloaded_binary"
             if command -v sudo >/dev/null 2>&1; then
                 print_info "Re-running script with sudo..."
                 # Use a different approach - create a temporary script with preserved state
@@ -199,10 +208,17 @@ export CLI_NAME=\"$CLI_NAME\"
 export CLI_BINARY=\"$CLI_BINARY\"
 export GITHUB_REPO=\"$GITHUB_REPO\"
 export TEMP_FILE=\"$TEMP_FILE\"
+export DOWNLOADED_BINARY=\"$DOWNLOADED_BINARY\"
+
+# Debug info
+echo \"[DEBUG] TEMP_FILE: \$TEMP_FILE\" >&2
+echo \"[DEBUG] DOWNLOADED_BINARY: \$DOWNLOADED_BINARY\" >&2
+echo \"[DEBUG] CLI_BINARY: \$CLI_BINARY\" >&2
+ls -la \"\$TEMP_FILE/\" >&2
 
 # Continue with installation
 mkdir -p \"\$INSTALL_DIR\"
-if mv \"\$TEMP_FILE/\$CLI_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
+if mv \"\$TEMP_FILE/\$DOWNLOADED_BINARY\" \"\$INSTALL_DIR/\$CLI_BINARY\"; then
     echo '[SUCCESS] Binary installed successfully!'
     echo \"[INFO] Binary location: \$INSTALL_DIR/\$CLI_BINARY\"
     mkdir -p \"\$SHARE_DIR\"
@@ -453,7 +469,7 @@ rm -rf \"\$TEMP_FILE\"
     mkdir -p "$INSTALL_DIR"
 
     # Install binary
-    if ! mv "${temp_dir}/${CLI_BINARY}" "${INSTALL_DIR}/${CLI_BINARY}"; then
+    if ! mv "${temp_dir}/${downloaded_binary}" "${INSTALL_DIR}/${CLI_BINARY}"; then
         print_error "Failed to install binary"
         rm -rf "$temp_dir"
         exit 1
