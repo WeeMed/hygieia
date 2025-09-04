@@ -142,57 +142,24 @@ install_cli() {
                 exit 1
             fi
 
-            # Use sudo to install, but ensure it can access the temp file
-            echo "Temp file: ${TEMP_DIR}/${BINARY_NAME}"
-            ls -la "${TEMP_DIR}/${BINARY_NAME}"
+            # Use sudo to install
+            sudo mkdir -p "$INSTALL_DIR"
+            sudo chmod 755 "$INSTALL_DIR"
+            # Ensure parent directories have correct permissions
+            sudo chmod 755 /usr/local 2>/dev/null || true
+            sudo chmod 755 /usr/local/bin 2>/dev/null || true
 
-            echo "Running sudo commands..."
-            # Try non-interactive sudo first
-            if sudo -n mkdir -p "$INSTALL_DIR" 2>/dev/null; then
-                echo "mkdir completed (non-interactive)"
-            elif sudo mkdir -p "$INSTALL_DIR"; then
-                echo "mkdir completed"
-            else
-                print_error "Failed to create install directory"
-                echo "mkdir failed, checking permissions..."
-                ls -la "$INSTALL_DIR" 2>/dev/null || echo "install dir not accessible"
-                exit 1
+            # Remove any existing file/directory at target location
+            if [[ -n "$CLI_BINARY" && "$CLI_BINARY" != "/" && "$CLI_BINARY" != ".." ]]; then
+                sudo rm -rf "$INSTALL_DIR/$CLI_BINARY" 2>/dev/null || true
             fi
 
-            if sudo -n cp "${TEMP_DIR}/${BINARY_NAME}" "$INSTALL_DIR/$CLI_BINARY" 2>/dev/null; then
-                echo "cp completed (non-interactive)"
-            elif sudo cp "${TEMP_DIR}/${BINARY_NAME}" "$INSTALL_DIR/$CLI_BINARY"; then
-                echo "cp completed"
-            else
-                print_error "Failed to copy binary to install directory"
-                echo "cp failed, checking temp file..."
-                ls -la "${TEMP_DIR}/${BINARY_NAME}" 2>/dev/null || echo "temp file not found"
-                echo "checking install dir..."
-                ls -la "$INSTALL_DIR" 2>/dev/null || echo "install dir not accessible"
-                exit 1
-            fi
-
-            if sudo -n chmod +x "$INSTALL_DIR/$CLI_BINARY" 2>/dev/null; then
-                echo "chmod completed (non-interactive)"
-            elif sudo chmod +x "$INSTALL_DIR/$CLI_BINARY"; then
-                echo "chmod completed"
-            else
-                print_error "Failed to make binary executable"
-                echo "chmod failed, checking installed file..."
-                ls -la "$INSTALL_DIR/$CLI_BINARY" 2>/dev/null || echo "installed file not found"
-                exit 1
-            fi
+            sudo cp "${TEMP_DIR}/${BINARY_NAME}" "$INSTALL_DIR/$CLI_BINARY"
+            sudo chmod +x "$INSTALL_DIR/$CLI_BINARY"
 
             # Remove macOS quarantine attribute for new installations
             if [[ "$OS" == "darwin" ]]; then
-                echo "Removing macOS security quarantine..."
-                if sudo -n xattr -rd com.apple.quarantine "$INSTALL_DIR/$CLI_BINARY" 2>/dev/null; then
-                    echo "quarantine removed (non-interactive)"
-                elif sudo xattr -rd com.apple.quarantine "$INSTALL_DIR/$CLI_BINARY" 2>/dev/null; then
-                    echo "quarantine removed"
-                else
-                    echo "no quarantine found or removal failed (this is OK)"
-                fi
+                sudo xattr -rd com.apple.quarantine "$INSTALL_DIR/$CLI_BINARY" 2>/dev/null || true
             fi
         fi
     fi
@@ -235,12 +202,7 @@ install_cli() {
     fi
 }
 
-# Check if running in test mode (no interactive input)
-if [[ -n "$CI" ]] || [[ -n "$GITHUB_ACTIONS" ]] || [[ ! -t 0 ]]; then
-    echo "Running in non-interactive mode, skipping actual installation..."
-    echo "Script validation successful!"
-    exit 0
-fi
+# Always run installation
 
 # Main execution
 install_cli
