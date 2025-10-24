@@ -108,7 +108,7 @@ hygieia restart
 ## Support
 
 * Documentation: [https://weemed.ai/](https://weemed.ai/)
-* Enterprise Support: Contact WeeMed Technical Team
+* Enterprise Support: service@weemed.ai
 
 ## About WeeMed
 
