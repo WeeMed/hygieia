@@ -1,5 +1,5 @@
 # Hygieia CLI
-**Release Version:** v1.5.18
+**Release Version:** v1.5.19
 
 Official command-line interface tool for managing Hygieia healthcare platform instances.
 
